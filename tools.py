@@ -39,3 +39,71 @@ def select_policy(employee):
             selected_rules.append(rule)
 
     return selected_rules
+
+
+def prepare_tasks(employee, selected_rules):
+    tasks = []
+
+    for rule in selected_rules:
+        task_name = rule["task"]
+        required = rule.get("requires", [])
+
+        if any(not employee.get(field) for field in required):
+            status = "Blocked"
+        else:
+            status = "Pending"
+
+        task = {"name": task_name, "status": status}
+
+        tasks.append(task)
+
+    return tasks
+
+
+
+def draft_welcome_email(employee) -> dict:
+
+    first_name = employee.get("first_name")
+    email = employee.get("employee_email")
+    manager = employee.get("manager")
+    manager_email = employee.get("manager_email")
+
+    # Check whether the email address is missing
+    if not email:
+        return {"error": "Employee email is missing"}
+
+    # Create the email subject
+    subject = f"Welcome to DemoTech, {first_name}!"
+
+    
+    if manager:
+        manager_text = (
+            f"Your manager, {manager}, will support you "
+            "during your onboarding."
+        )
+    else:
+        manager_text = (
+            "We will share your manager's details "
+            "once they are confirmed."
+        )
+
+    body = (
+        f"Dear {first_name},\n\n"
+        "Welcome to DemoTech! We are excited to have you joining us.\n\n"
+        f"{manager_text}\n\n"
+        "As part of your onboarding, we will coordinate "
+        "an introductory meeting with your manager.\n\n"
+        "Best regards,\n"
+        "DemoTech HR Team"
+    )
+
+
+    # Return the draft for HR review
+    return {
+        "to": email,
+        "cc": manager_email or "",
+        "subject": subject,
+        "body": body,
+        "approval_status": "Awaiting HR approval"
+    }
+

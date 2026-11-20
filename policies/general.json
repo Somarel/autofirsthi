@@ -9,7 +9,8 @@
       "id": "R1",
       "applies_to": {"all": true},
       "task": "welcome_email",
-      "instruction": "Prepare a welcome email before the employee's first day."
+      "instruction": "Prepare a welcome email before the employee's first day.",
+      "requires": ["employee_email"]
     },
     {
       "id": "R2",
