@@ -1,0 +1,58 @@
+
+{
+  "policy_id": "POL-001",
+  "company": "DemoTech",
+  "title": "General Employee Onboarding Policy",
+  "version": "1.0",
+  "rules": [
+    {
+      "id": "R1",
+      "applies_to": {"all": true},
+      "task": "welcome_email",
+      "instruction": "Prepare a welcome email before the employee's first day."
+    },
+    {
+      "id": "R2",
+      "applies_to": {"all": true},
+      "task": "equipment_preference_request",
+      "instruction": "Ask the employee to choose preferred laptop and work phone brands before equipment is selected."
+    },
+    {
+      "id": "R3",
+      "applies_to": {"all": true},
+      "task": "equipment_preparation",
+      "instruction": "Prepare a laptop and a work phone after employee preferences are received.",
+      "requires": ["equipment_preferences"]
+    },
+    {
+      "id": "R4",
+      "applies_to": {"all": true},
+      "task": "manager_introduction",
+      "instruction": "Arrange an introductory meeting with the manager within the first two working days.",
+      "requires": ["manager", "manager_email"],
+      "within_first_working_days": 2
+    },
+    {
+      "id": "R5",
+      "applies_to": {"department": "Engineering"},
+      "task": "engineering_it_preparation",
+      "instruction": "Create an additional IT equipment preparation task for Engineering employees."
+    },
+    {
+      "id": "R6",
+      "applies_to": {"work_arrangement": "Remote"},
+      "task": "remote_online_orientation",
+      "instruction": "Arrange an additional online orientation for remote employees."
+    },
+    {
+      "id": "R7",
+      "applies_to": {"missing_any": ["manager", "manager_email"]},
+      "task": "request_manager_details",
+      "instruction": "Ask HR for missing manager details; do not schedule the manager introduction until they are provided."
+    }
+  ],
+  "approval_rules": {
+    "send_emails": "human_approval_required",
+    "send_calendar_invitations": "human_approval_required"
+  }
+}
