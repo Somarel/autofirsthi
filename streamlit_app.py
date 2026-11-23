@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import date, datetime, timezone, time
 from zoneinfo import ZoneInfo
-
+from agent import generate_verified_plan, ask_onboarding_agent
 
 from tools import (
     check_missing_info,
@@ -12,8 +12,6 @@ from tools import (
     draft_manager_meeting,
     get_allowed_meeting_dates
 )
-
-from agent import run_onboarding_agent, ask_onboarding_agent
 
 st.set_page_config(
     page_title="AutoFirstHi",
@@ -435,8 +433,8 @@ if "employee" in st.session_state:
         ):
 
             try:
-                analysis = run_onboarding_agent(
-                    st.session_state["employee"]
+                analysis = generate_verified_plan(
+                st.session_state["employee"]
                 )
 
                 st.session_state["ai_analysis"] = analysis

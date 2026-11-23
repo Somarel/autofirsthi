@@ -4,13 +4,27 @@ from datetime import datetime, timezone
 from pathlib import Path
 from google.genai import errors
 from agent import ask_onboarding_agent
-
+import sys
 
 # Load our evaluation dataset
 with open("eval_cases.json", encoding="utf-8") as file:
     cases = json.load(file)
 
-case = cases[0]
+
+case_id = (
+    sys.argv[1]
+    if len(sys.argv) > 1
+    else cases[0]["id"]
+)
+
+case = next(
+    (item for item in cases if item["id"] == case_id),
+    None
+)
+
+if case is None:
+    raise SystemExit(f"Unknown evaluation case: {case_id}")
+
 
 # Measure how long Gemini takes
 
