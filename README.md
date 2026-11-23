@@ -1,4 +1,3 @@
-
 # AutoFirstHi 👋
 
 **AI-assisted employee onboarding with deterministic policy checks, human approval, and LLM evaluation.**
@@ -77,29 +76,31 @@ The verified plan and the free-text AI response are distinct outputs. Python det
 
 AutoFirstHi includes a small experimental evaluation workflow:
 
-1. Store fictional employee scenarios and expected behavior in `eval_cases.json`.
-2. Generate and record Gemini responses, latency, API errors, and retry counts using `run_evaluation.py` and `run_batch_evaluation.py`.
-3. Compare extractable task-status claims with Python ground truth and flag selected suspicious policy statements using `evaluate_response.py`.
-4. Record human judgments of policy accuracy and helpfulness; summarize the recorded runs using `summarize_evaluations.py`.
+1. Define synthetic employee scenarios with expected policy rules and task statuses in `eval_cases.json` (**13 scenarios currently defined**).
+2. Send scenario questions to Gemini and log responses, end-to-end latency, API errors, and retry counts with `run_evaluation.py` and `run_batch_evaluation.py`.
+3. Compare extractable task-status claims against Python ground truth and screen for selected potentially unsupported policy statements using `evaluate_response.py`.
+4. Record human judgments of policy accuracy and helpfulness using `review_batch.py`; summarize reviewed runs using `summarize_evaluations.py`.
 
-### Initial experiment
+Automated text-pattern checks are *screening heuristics*: they cannot reliably establish whether every claim is supported. Human review is tracked separately. The current batch runner repeats the default evaluation case rather than automatically running all 13 scenarios.
 
-Three repeated responses to **one fictional scenario** produced the following observations:
+### Initial human-reviewed evaluation
+
+The latest reviewed set contains **three saved Gemini responses to synthetic missing-manager onboarding questions**, not a full run of the 13-scenario dataset.
 
 | Metric | Observed result |
 |---|---:|
 | Successful responses after application-level retries | 3/3 |
-| First-attempt success | 2/3 |
-| Average end-to-end response time | 12.21 seconds |
-| Transient HTTP 503 errors encountered | 2 |
-| Mean human-rated helpfulness | 4/5 |
-| Responses with human-identified unsupported policy claims | 2/3 |
+| First-attempt success | 1/3 |
+| Average end-to-end response time (including retries) | 33.37 seconds |
+| HTTP 503 errors recorded across attempts | 4 |
+| Mean human-rated helpfulness | 4.0/5 |
+| Responses flagged by human review for a potentially unsupported policy claim | 1/3 |
 
-In one individually examined response, all seven explicitly reported task statuses agreed with Python ground truth (**7/7**). However, the model also described a welcome-email deadline as a company requirement even though the policy did not specify one.
+**Policy-claim interpretation:** DemoTech policy **R1** requires *preparing* a welcome email **before the employee's first day**. It does **not** establish a mandatory deadline for *sending* that email. One human-reviewed response said the welcome email should be prepared "to be sent ... before her first day." This was flagged for possible confusion between preparation and sending, but the wording is ambiguous and **is not a confirmed hallucination**. The 1/3 figure is the rate of *human-flagged potential issues* in this small sample, not a validated model hallucination rate.
 
-**Key lesson:** A response can be useful and report correct task statuses while still introducing an unsupported policy claim. Simple text-pattern checks are screening tools, not comprehensive hallucination detection.
+**Reliability observation:** All three requests eventually succeeded, but only one succeeded on its first attempt; four HTTP 503 errors occurred across attempts. The measured latency therefore includes retry overhead.
 
-These results are preliminary and are **not** estimates of general model reliability.
+These observations are exploratory. Three reviewed responses are too few to estimate general model accuracy, hallucination prevalence, or API reliability, and **the full 13-scenario set has not yet been evaluated with Gemini**.
 
 ## Technology Stack
 
@@ -139,13 +140,16 @@ Run the deterministic business-logic tests:
 uv run pytest -q test_tools.py
 ```
 
-Run a single AI evaluation (makes a real Gemini API request and may consume quota):
+Run a three-response batch for the default scenario (real Gemini API requests; may consume quota), inspect the latest response, and record human reviews:
 
 ```bash
-uv run python run_evaluation.py
+uv run python run_batch_evaluation.py
 uv run python evaluate_response.py
+uv run python review_batch.py
 uv run python summarize_evaluations.py
 ```
+
+To evaluate a different scenario individually, pass its ID, for example `uv run python run_evaluation.py missing_manager_email`. `evaluate_response.py` inspects only the latest run; `review_batch.py` and `summarize_evaluations.py` use the latest three saved runs, which can contain different cases if they were run individually.
 
 The raw response log, `eval_results.json`, is excluded from version control.
 
@@ -171,7 +175,7 @@ Streamlit Community Cloud uses its own **Secrets** configuration for `GEMINI_API
 - **Human-in-the-loop demonstration:** Approving a draft records a decision in the current Streamlit session; it does not send emails or schedule meetings.
 - **Working-day calculation:** Excludes weekends but not public holidays.
 - **LLM limitations:** Gemini may invent requirements, miss discrepancies, or suggest unperformed actions. The deterministic task list remains separate; AI-generated prose still requires review.
-- **Evaluation scope:** The current experiment covers a small number of responses to one scenario; broader and versioned test cases are needed for reliable comparisons.
+- **Evaluation scope:** Thirteen synthetic scenarios are defined, but the latest reported human review covers only three saved responses. The batch runner does not yet execute every case automatically; broader, repeated evaluations are needed for reliable comparisons.
 - **Privacy:** Use fictional employee information in the public demo. Do not put API keys or real HR records in the repository or evaluation logs.
 
 ---
