@@ -11,6 +11,13 @@ The project demonstrates how generative AI can be integrated with deterministic 
 
 **Source Code:** [GitHub Repository](https://github.com/Somarel/autofirsthi)
 
+## Application Screenshots
+
+### Employee Registration
+![Employee Registration](assets/registration.png)
+
+### Policy-Verified AI Onboarding Plan
+![Verified Onboarding Plan](assets/verified-plan.png)
 
 ## Key Features
 
