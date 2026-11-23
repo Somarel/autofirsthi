@@ -97,9 +97,11 @@ if submitted:
 
         # Save employee for future Streamlit reruns
         st.session_state["employee"] = employee
+        st.session_state["approval_history"] = []
 
         # Remove previous AI analysis
         st.session_state.pop("ai_analysis", None)
+        st.session_state.pop("assistant_answer", None)
 
         # Write welcome draft
         st.session_state.pop("welcome_draft", None)
@@ -139,6 +141,7 @@ if "employee" in st.session_state:
 
         st.session_state["employee"] = employee
         st.session_state.pop("ai_analysis", None)
+        st.session_state.pop("assistant_answer", None)
         st.rerun()
 
 
@@ -416,44 +419,38 @@ st.write("Number of rules:", len(policy["rules"]))
 if "employee" in st.session_state:
 
     st.divider()
-    st.subheader("AI Onboarding Analysis")
+    st.subheader("Verified Onboarding Plan")
+
 
     st.write(
-        "Use Gemini AI to analyze the onboarding tasks "
-        "and explain any missing requirements."
+        "Generate a verified onboarding plan using "
+        "predefined Python policy rules."
     )
 
     if st.button(
-        "Generate AI Analysis",
+        "Generate Verified Plan",
         type="primary"
     ):
-
-        with st.spinner(
-            "Gemini is analyzing onboarding requirements..."
-        ):
-
+        with st.spinner("Checking onboarding policies..."):
             try:
                 analysis = generate_verified_plan(
-                st.session_state["employee"]
+                    st.session_state["employee"]
                 )
 
                 st.session_state["ai_analysis"] = analysis
 
             except Exception as error:
-                st.error(f"AI analysis failed: {error}")
+                st.error(f"Plan generation failed: {error}")
 
-    # Display the saved AI analysis
+    # Display the verified onboarding plan
     if "ai_analysis" in st.session_state:
 
-        st.markdown(
-            st.session_state["ai_analysis"]
-        )
+        st.markdown(st.session_state["ai_analysis"])
 
         st.info(
-            "AI-generated recommendations require HR review. "
+            "This plan is generated using verified Python policy rules. "
             "No emails or calendar invitations have been sent."
         )
-
 
     st.divider()
     st.subheader("Ask AutoFirstHi")
