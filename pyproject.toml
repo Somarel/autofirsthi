@@ -2,3 +2,4 @@
 name = "autofirsthi"
 version = "0.1.0"
 description = "AI-assisted employee onboarding with deterministic policy validation, Gemini, human approval, and LLM evaluation."
+requires-python = ">=3.14"
