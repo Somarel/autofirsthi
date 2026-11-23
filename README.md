@@ -7,6 +7,11 @@ The project demonstrates how generative AI can be integrated with deterministic 
 
 **Status:** Functional portfolio prototype using fictional employee data.
 
+**Live Demo:** [Try AutoFirstHi](https://autofirsthi.streamlit.app/)
+
+**Source Code:** [GitHub Repository](https://github.com/Somarel/autofirsthi)
+
+
 ## Key Features
 
 - **Policy-based planning:** Selects onboarding tasks from a configurable JSON policy.
