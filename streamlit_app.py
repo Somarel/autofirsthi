@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import date, datetime, timezone, time
 from zoneinfo import ZoneInfo
 
+
 from tools import (
     check_missing_info,
     get_policy,
@@ -12,7 +13,7 @@ from tools import (
     get_allowed_meeting_dates
 )
 
-from agent import run_onboarding_agent
+from agent import run_onboarding_agent, ask_onboarding_agent
 
 st.set_page_config(
     page_title="AutoFirstHi",
@@ -454,3 +455,34 @@ if "employee" in st.session_state:
             "AI-generated recommendations require HR review. "
             "No emails or calendar invitations have been sent."
         )
+
+
+    st.divider()
+    st.subheader("Ask AutoFirstHi")
+
+    question = st.text_area(
+        "What would you like to know about this employee's onboarding?",
+        placeholder="What can we prepare while waiting for the manager's email?"
+    )
+
+    if st.button("Ask Gemini", key="ask_gemini"):
+
+        if not question.strip():
+            st.warning("Please enter a question.")
+
+        else:
+            with st.spinner("Preparing an answer..."):
+                try:
+                    answer = ask_onboarding_agent(
+                        st.session_state["employee"],
+                        question
+                    )
+
+                    st.session_state["assistant_answer"] = answer
+
+                except Exception:
+                    st.error("AI assistant unavailable. Please try again.")
+
+    if st.session_state.get("assistant_answer"):
+        st.markdown("### Assistant Response")
+        st.markdown(st.session_state["assistant_answer"])

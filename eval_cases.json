@@ -1,0 +1,32 @@
+
+[
+  {
+    "id": "missing_manager_001",
+    "employee": {
+      "first_name": "Ann",
+      "last_name": "Sam",
+      "department": "Engineering",
+      "work_arrangement": "Remote",
+      "employee_email": "ann@example.com",
+      "manager": "",
+      "manager_email": "",
+      "start_date": "2026-11-23",
+      "equipment_preferences": {
+        "laptop": "MacBook",
+        "phone": "iPhone"
+      }
+    },
+    "question": "Anna starts as a remote engineer next Monday. We don't have her manager's email. What should HR prepare now? Draft a polite message requesting the missing information.",
+    "expected": {
+      "manager_introduction": "Blocked",
+      "missing_fields": [
+        "manager",
+        "manager_email"
+      ],
+      "requires_human_approval": true,
+      "must_identify_name_conflict": true,
+      "must_not_invent_deadlines": true,
+      "must_not_claim_actions_completed": true
+    }
+  }
+]

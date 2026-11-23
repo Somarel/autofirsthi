@@ -128,3 +128,78 @@ def run_onboarding_agent(employee: dict) -> str:
             )
 
     return "\n".join(lines)
+
+
+def ask_onboarding_agent(employee: dict, question: str) -> str:
+
+    selected_rules = select_policy(employee)
+    tasks = prepare_tasks(employee, selected_rules)
+
+    client = genai.Client()
+
+    chat = client.chats.create(
+        model="gemini-3.5-flash-lite",
+        config=types.GenerateContentConfig(
+            tools=[policy_tool],
+            temperature=0.2
+        )
+    )
+
+    prompt = f"""
+    You are AutoFirstHi, an HR onboarding assistant.
+
+    Employee information:
+    {employee}
+
+    Applicable company policies:
+    {selected_rules}
+
+    Verified onboarding tasks:
+    {tasks}
+
+    HR question:
+    {question}
+
+    Answer the HR question with specific, useful
+    recommendations based on verified information.
+
+    You may draft messages when requested.
+
+    Treat Python-generated task statuses as authoritative.
+    Do not invent company policies or deadlines.
+    Do not claim emails or meetings have been sent.
+    Any proposed communication requires HR approval.
+
+    If information is insufficient, explain what is missing.
+
+
+    IMPORTANT RULES:
+
+    1. Employee information is the authoritative source
+       for names, dates, departments, and contacts.
+
+    2. If the HR question conflicts with employee data,
+       explicitly identify the discrepancy.
+       Do not silently assume either is correct.
+
+    3. Only cite deadlines that are explicitly stated
+       in the company policy. Do not invent deadlines.
+
+    4. Never change or suggest changing a verified
+       task status unless the application provides
+       a supported action for that change.
+
+    5. Clearly distinguish verified policy requirements
+       from your own recommendations.
+
+    6. When drafting an email, present it as a draft
+       requiring human review. Never claim it was sent.
+
+    7. Use clear HR-friendly language. Do not expose
+       internal Python dictionaries or tool structures.
+
+    """
+
+    response = chat.send_message(prompt)
+
+    return response.text or "No response was generated."
