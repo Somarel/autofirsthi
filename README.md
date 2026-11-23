@@ -70,7 +70,7 @@ flowchart TD
     G --> H{"Human approval"}
     H --> I["Session-level approval history"]
 ```
-
+Gemini is integrated through function calling, while deterministic Python rules verify onboarding tasks and their dependencies. Human approval is required for proposed communications.
 
 ## Project Structure
 
