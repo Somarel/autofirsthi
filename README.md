@@ -43,12 +43,20 @@ Gemini can explain which preparations may proceed and draft a message for human 
 ## Screenshots
 
 ### Employee registration
+Register a new employee and configure their onboarding preferences.
 
-![AutoFirstHi employee registration](assets/registration.png)
+![Employee registration](assets/registration.png)
 
 ### Policy-verified onboarding plan
+Python validates applicable policies and identifies Pending and Blocked tasks.
 
-![AutoFirstHi verified onboarding plan](assets/verified-plan.png)
+![Verified onboarding plan](assets/verified-plan.png)
+
+### Gemini-powered onboarding assistant
+Ask AutoFirstHi provides contextual guidance based on the employee information and onboarding policies.
+
+![Ask AutoFirstHi](assets/ask-autofirsthi.png)
+
 
 ## Architecture
 
