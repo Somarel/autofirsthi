@@ -1,121 +1,179 @@
 
-# AutoFirstHi — AI-Assisted Employee Onboarding
+# AutoFirstHi 👋
 
-AutoFirstHi is a Python application that helps HR teams prepare employee onboarding plans using AI, structured company policies, and human approval workflows.
+**AI-assisted employee onboarding with deterministic policy checks, human approval, and LLM evaluation.**
 
-The project demonstrates how generative AI can be integrated with deterministic business rules to produce more reliable, auditable results.
+[**Live demo**](https://autofirsthi.streamlit.app/) | [**Source code**](https://github.com/Somarel/autofirsthi)
 
-**Status:** Functional portfolio prototype using fictional employee data.
+AutoFirstHi is a Python and Streamlit prototype that helps HR teams prepare onboarding plans for new employees. It combines a rule-based workflow with a Google Gemini assistant that answers natural-language questions, recommends next steps, and drafts communications.
 
-**Live Demo:** [Try AutoFirstHi](https://autofirsthi.streamlit.app/)
+**This is a portfolio demonstration using a fictional company (DemoTech) and fictional employee records.** It does not send emails or create calendar events.
 
-**Source Code:** [GitHub Repository](https://github.com/Somarel/autofirsthi)
+## Why combine Python and AI?
 
-## Application Screenshots
+A language model is not needed to decide whether a required field is missing or whether a policy applies. Python handles those decisions deterministically. Gemini is used where language flexibility matters: interpreting HR questions, explaining onboarding context, identifying possible discrepancies, and drafting messages.
 
-### Employee Registration
-![Employee Registration](assets/registration.png)
+- **Python is authoritative** for selecting policies, generating task statuses (`Pending` or `Blocked`), and checking dependencies.
+- **Gemini is an assistant**, generating natural-language recommendations and communication drafts from employee context and verified policy information.
+- **A human remains in control** of communication approval. No external actions are executed by this prototype.
 
-### Policy-Verified AI Onboarding Plan
-![Verified Onboarding Plan](assets/verified-plan.png)
+## Features
 
-## Key Features
+- Employee registration with department, work arrangement, manager information, and equipment preferences.
+- Configurable DemoTech onboarding rules stored in `policies/general.json`.
+- Policy selection and dependency-aware task generation.
+- Welcome-email and manager-introduction meeting drafts, with approve/reject controls.
+- Meeting-date checks for the first two working days (weekdays only).
+- Session-level approval history.
+- **Ask AutoFirstHi:** natural-language HR questions, context-aware suggestions, discrepancy notices, and draft messages using Gemini.
+- A separate, Python-generated **Verified Onboarding Plan** that does not rely on the model's wording for task statuses.
+- Automated Python tests and an experimental LLM evaluation workflow.
 
-- **Policy-based planning:** Selects onboarding tasks from a configurable JSON policy.
-- **Conditional task management:** Marks tasks as Pending or Blocked based on available employee information.
-- **AI tool calling:** Uses Google Gemini to interact with Python tools for policy retrieval and onboarding planning.
-- **Verified outputs:** Recalculates task statuses using deterministic Python logic rather than trusting AI-generated statuses.
-- **Email preparation:** Creates personalized welcome email drafts.
-- **Meeting preparation:** Drafts manager introduction meetings and validates dates against the first two working days.
-- **Human approval:** Supports approving or rejecting proposed emails and meetings.
-- **Audit history:** Records approval decisions during the active Streamlit session.
-- **Automated testing:** Includes 11 pytest tests covering business rules and error handling.
+## Example scenario
 
-## Technology Stack
+A remote Engineering employee has selected a MacBook and iPhone, but their manager's name and email are missing.
 
-- Python
-- Streamlit
-- Google Gemini API and Google GenAI SDK
-- JSON-based policy configuration
-- pytest
-- uv
-- Git and GitHub
+The deterministic policy engine identifies `manager_introduction` as **Blocked**, while equipment preparation, Engineering IT preparation, remote orientation, and other applicable tasks remain **Pending**.
 
-## How It Works
+An HR user can then ask:
 
-1. HR enters employee information in the Streamlit interface.
-2. Python selects applicable company policies.
-3. The application generates tasks and checks for missing information.
-4. Gemini can call Python tools to retrieve policies and generate onboarding information.
-5. Python verifies the final task statuses.
-6. HR can prepare, review, approve, or reject email and meeting drafts.
+> What can we prepare now, and can you draft a message requesting the missing manager details?
 
+Gemini can explain which preparations may proceed and draft a message for human review. It cannot change the verified task statuses or send the message.
 
-## System Architecture
+## Screenshots
+
+### Employee registration
+
+![AutoFirstHi employee registration](assets/registration.png)
+
+### Policy-verified onboarding plan
+
+![AutoFirstHi verified onboarding plan](assets/verified-plan.png)
+
+## Architecture
 
 ```mermaid
 flowchart TD
-    A["HR enters employee information"] --> B["Streamlit application"]
-
-    B --> C["Python policy engine"]
-    B --> D["Gemini AI agent"]
-
-    D --> E["Function calling"]
-    E --> C
-
-    C --> F["Verified onboarding tasks"]
-    F --> B
-
-    B --> G["Email and meeting drafts"]
-    G --> H{"Human approval"}
-    H --> I["Session-level approval history"]
+    A[HR user] --> B[Streamlit interface]
+    B --> C[Employee information]
+    C --> D[Python policy engine]
+    D --> E[Verified tasks and missing requirements]
+    B --> F[Natural-language HR question]
+    C --> G[Google Gemini assistant]
+    E --> G
+    F --> G
+    G -. optional policy tool call .-> D
+    G --> H[Recommendations and message drafts]
+    E --> B
+    H --> B
+    B --> I[Human review and approval]
+    I --> J[Streamlit session-level history]
 ```
-Gemini is integrated through function calling, while deterministic Python rules verify onboarding tasks and their dependencies. Human approval is required for proposed communications.
 
-## Project Structure
+The verified plan and the free-text AI response are distinct outputs. Python determines the task statuses; Gemini generates explanations and proposals. **The application does not yet automatically verify every claim made in the AI-generated text.** Response quality is assessed separately through the evaluation scripts.
 
-- `streamlit_app.py` — User interface, forms, approvals, and session state
-- `agent.py` — Gemini integration and function calling
-- `tools.py` — Policy selection, task preparation, email and meeting tools
-- `policies/general.json` — DemoTech onboarding policies
-- `test_tools.py` — Automated tests
+## LLM Evaluation and Monitoring
+
+AutoFirstHi includes a small experimental evaluation workflow:
+
+1. Store fictional employee scenarios and expected behavior in `eval_cases.json`.
+2. Generate and record Gemini responses, latency, API errors, and retry counts using `run_evaluation.py` and `run_batch_evaluation.py`.
+3. Compare extractable task-status claims with Python ground truth and flag selected suspicious policy statements using `evaluate_response.py`.
+4. Record human judgments of policy accuracy and helpfulness; summarize the recorded runs using `summarize_evaluations.py`.
+
+### Initial experiment
+
+Three repeated responses to **one fictional scenario** produced the following observations:
+
+| Metric | Observed result |
+|---|---:|
+| Successful responses after application-level retries | 3/3 |
+| First-attempt success | 2/3 |
+| Average end-to-end response time | 12.21 seconds |
+| Transient HTTP 503 errors encountered | 2 |
+| Mean human-rated helpfulness | 4/5 |
+| Responses with human-identified unsupported policy claims | 2/3 |
+
+In one individually examined response, all seven explicitly reported task statuses agreed with Python ground truth (**7/7**). However, the model also described a welcome-email deadline as a company requirement even though the policy did not specify one.
+
+**Key lesson:** A response can be useful and report correct task statuses while still introducing an unsupported policy claim. Simple text-pattern checks are screening tools, not comprehensive hallucination detection.
+
+These results are preliminary and are **not** estimates of general model reliability.
+
+## Technology Stack
+
+- **Language:** Python
+- **Interface:** Streamlit
+- **AI:** Google Gemini API (`google-genai` SDK)
+- **Business rules:** JSON policy configuration and Python functions
+- **Testing:** pytest
+- **Dependency management:** uv
+- **Version control and deployment:** GitHub and Streamlit Community Cloud
 
 ## Run Locally
 
-Clone the repository:
+Clone the repository and install dependencies:
 
-    git clone https://github.com/Somarel/autofirsthi.git
-    cd autofirsthi
+```bash
+git clone https://github.com/Somarel/autofirsthi.git
+cd autofirsthi
+uv sync
+```
 
-Install dependencies:
+Set your Gemini API key in your environment (never commit it to Git):
 
-    uv sync
+```bash
+export GEMINI_API_KEY="your-api-key"
+```
 
-Configure the `GEMINI_API_KEY` environment variable securely. Do not commit API keys to Git.
+Start the app:
 
-Start the application:
+```bash
+uv run streamlit run streamlit_app.py
+```
 
-    uv run streamlit run streamlit_app.py
+Run the deterministic business-logic tests:
 
-Run automated tests:
+```bash
+uv run pytest -q test_tools.py
+```
 
-    uv run pytest -q test_tools.py
+Run a single AI evaluation (makes a real Gemini API request and may consume quota):
 
-## Safety and Limitations
+```bash
+uv run python run_evaluation.py
+uv run python evaluate_response.py
+uv run python summarize_evaluations.py
+```
 
-This project is a demonstration, not a production HR system.
+The raw response log, `eval_results.json`, is excluded from version control.
 
-- All employee examples are fictional.
-- Emails and calendar invitations are drafted but never sent.
-- Human approval is required before any proposed external action.
-- Approval history is stored in Streamlit session state, not a persistent database.
-- Working-day validation excludes weekends but does not yet account for public holidays.
-- Production authentication and authorization are not implemented.
+Streamlit Community Cloud uses its own **Secrets** configuration for `GEMINI_API_KEY`.
 
-## Future Improvements
+## Project Files
 
-- Persistent database for onboarding records and approval history
-- Authentication and role-based permissions
-- Swedish public holiday support
-- Additional integration tests and CI
-- Optional email and calendar integrations with explicit authorization
+| Path | Responsibility |
+|---|---|
+| `streamlit_app.py` | Employee form, draft review, approval history, and AI question interface |
+| `agent.py` | Gemini integration, policy tools, and AI response generation |
+| `tools.py` | Deterministic policy selection, task statuses, and draft preparation |
+| `policies/general.json` | Fictional DemoTech onboarding rules |
+| `test_tools.py` | 11 automated business-logic tests |
+| `eval_cases.json` | Fictional evaluation scenarios and expected behaviors |
+| `run_evaluation.py`, `run_batch_evaluation.py` | Response capture, retries, and request pacing |
+| `evaluate_response.py`, `summarize_evaluations.py` | Experimental response checks and metrics |
+| `review_evaluation.py`, `review_batch.py` | Manual review of saved responses |
+
+## Limitations and Next Steps
+
+- **Prototype, not a production HR system:** No user authentication, access controls, or persistent audit database.
+- **Human-in-the-loop demonstration:** Approving a draft records a decision in the current Streamlit session; it does not send emails or schedule meetings.
+- **Working-day calculation:** Excludes weekends but not public holidays.
+- **LLM limitations:** Gemini may invent requirements, miss discrepancies, or suggest unperformed actions. The deterministic task list remains separate; AI-generated prose still requires review.
+- **Evaluation scope:** The current experiment covers a small number of responses to one scenario; broader and versioned test cases are needed for reliable comparisons.
+- **Privacy:** Use fictional employee information in the public demo. Do not put API keys or real HR records in the repository or evaluation logs.
+
+---
+
+**Portfolio focus:** Reliable workflow automation, practical generative AI integration, human oversight, and measurable LLM behavior.
