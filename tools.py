@@ -1,4 +1,5 @@
 import json
+from datetime import date, timedelta
 
 def check_missing_info(employee):
     required_fields = {
@@ -75,7 +76,7 @@ def draft_welcome_email(employee) -> dict:
     # Create the email subject
     subject = f"Welcome to DemoTech, {first_name}!"
 
-    
+
     if manager:
         manager_text = (
             f"Your manager, {manager}, will support you "
@@ -107,3 +108,43 @@ def draft_welcome_email(employee) -> dict:
         "approval_status": "Awaiting HR approval"
     }
 
+
+def draft_manager_meeting(employee) -> dict:
+
+    manager = employee.get("manager")
+    manager_email = employee.get("manager_email")
+    employee_email = employee.get("employee_email")
+    first_name = employee.get("first_name")
+
+    if not employee_email:
+        return {"error": "Employee email is missing"}
+
+    if not manager or not manager_email:
+        return {"error": "Manager or manager email is missing"}
+
+    # Create a meeting subject
+    subject = f"Introduction Meeting — {first_name} & {manager}"
+
+    # Create a meeting agenda
+    agenda = "Introductions, onboarding expectations, initial questions"
+
+    return {
+        "subject": subject,
+        "attendees": [employee_email, manager_email],
+        "agenda": agenda,
+        "meeting_time": None,
+        "approval_status": "Awaiting HR approval"
+    }
+
+
+def get_allowed_meeting_dates(start_date):
+    current_day = date.fromisoformat(start_date)
+    allowed_dates = []
+
+    while len(allowed_dates) < 2:
+        if current_day.weekday() < 5:
+            allowed_dates.append(current_day)
+
+        current_day += timedelta(days=1)
+
+    return allowed_dates
