@@ -81,9 +81,6 @@ def run_onboarding_agent(employee: dict) -> str:
     If equipment_preferences are provided,
     equipment_preparation is Pending.
 
-    If no tasks have status "Blocked",
-    explicitly state: "No blocked tasks."
-
     Human approval is required before sending emails
     or calendar invitations, but this does not
     automatically make a Pending task Blocked.
@@ -106,16 +103,15 @@ def run_onboarding_agent(employee: dict) -> str:
             f"- {task['name']}: **{task['status']}**"
         )
 
+
     blocked_tasks = [
         task for task in tasks
         if task["status"] == "Blocked"
     ]
 
-    lines.append("\n### Blocked Tasks")
+    if blocked_tasks:
+        lines.append("\n### Blocked Tasks")
 
-    if not blocked_tasks:
-        lines.append("No blocked tasks.")
-    else:
         for task in blocked_tasks:
             rule = next(
                 r for r in selected_rules
